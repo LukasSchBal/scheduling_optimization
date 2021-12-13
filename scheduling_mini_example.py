@@ -12,7 +12,9 @@ of batch processes" (Doi: 10.1016/j.compchemeng.2006.02.008).
 All parameters and variables are written as "name_index".
 """
 
-from pyomo.environ import *
+import pyomo.environ as pyo
+
+## input
 
 # states and their specification in matrix form: state, min storage, max storage, initial amount, price, market demand
 #               S           STmin   STmax           ST0     P   D
@@ -31,10 +33,10 @@ recipe = [  ['state 1', 'task 1',   -1,     0],
             ['state 4', 'task 3',   0,      1]]
 
 # tasks and their specification in matrix form:
-#           J           I           Vmin    Vmax    alpha   beta    Mass flow
-tasks = [   ['unit 1',  'task 1',   0,      100,    3,      0.03,   3],
-            ['unit 2',  'task 2',   0,      75,     2,      0.0267, 3],
-            ['unit 3',  'task 3',   0,      50,     1,      0.02,   3]]
+#           J           I           Vmin    Vmax    alpha   beta
+tasks = [   ['unit 1',  'task 1',   0,      100,    3,      0.03],
+            ['unit 2',  'task 2',   0,      75,     2,      0.0267],
+            ['unit 3',  'task 3',   0,      50,     1,      0.02]]
 
 ## sets
 N = {}                 # set of event points
@@ -87,7 +89,7 @@ for row in recipe:                          # for each step of the recipe...
     Rho_p_si[state, task] = row[3]     # set Rho_p 
     I_s[state].add(task)               # add task to set of tasks using the state s
 
-# read input matrix for units and tasks
+## read input matrix for units and tasks
 for row in tasks:                           # for each unit/task combination from the input...
     unit = row[0]
     task = row[1]
@@ -104,31 +106,31 @@ for row in tasks:                           # for each unit/task combination fro
 
 
 
-model = ConcreteModel()     # create model instance
-model.cons = ConstraintList()       # create list of constraints
+model = pyo.ConcreteModel()     # create model instance
+model.cons = pyo.ConstraintList()       # create list of constraints
 
 # set up variables
 
 ## w_in[i,n] 1 if task i is starting at event point n, else 0
-model.w_in = Var(I, N, domain=Boolean, initialize=0 ) #, 
+model.w_in = pyo.Var(I, N, domain=pyo.Boolean, initialize=0 ) #, 
 
 ## w_jn[j,n] 1 if unit j is utilized at event point n, else 0
-model.w_jn = Var(J, N, domain=Boolean, initialize=0 ) #, 
+model.w_jn = pyo.Var(J, N, domain=pyo.Boolean, initialize=0 ) #, 
 
 ## b_ijn[i,j,n] batch/capacity of task i in unit j at event point n
-model.b_ijn = Var(I, J, N, domain=NonNegativeReals, initialize=0 ) #, 
+model.b_ijn = pyo.Var(I, J, N, domain=pyo.NonNegativeReals, initialize=0 ) #, 
 
 ## st_sn[s,n] storage capacity of state s at event point n
-model.st_sn = Var(S, N,  domain=NonNegativeReals) #,
+model.st_sn = pyo.Var(S, N,  domain=pyo.NonNegativeReals) #,
 
 ## d_sn[s,n] amount of state s being delivered to the market at event point n (demand)
-model.d_sn = Var(S, N, domain=NonNegativeReals, initialize=0 ) #, 
+model.d_sn = pyo.Var(S, N, domain=pyo.NonNegativeReals, initialize=0 ) #, 
 
 ## tauf_ijn[i,j,n] finish time of task i at unit j at event point n
-model.tauf_ijn = Var(I, J, N, domain=NonNegativeReals, initialize=0 ) #, 
+model.tauf_ijn = pyo.Var(I, J, N, domain=pyo.NonNegativeReals, initialize=0 ) #, 
 
 ## taus_ijn[i,j,n] start time of task i at unit j at event point n
-model.taus_ijn = Var(I, J, N, domain=NonNegativeReals, initialize=0 ) #,
+model.taus_ijn = pyo.Var(I, J, N, domain=pyo.NonNegativeReals, initialize=0 ) #,
 
 # set up constraints
 
@@ -222,8 +224,8 @@ for n in N:
 
 
 # set up objective function
-model.obj_fun = Objective(expr = sum(P_s[s]*(sum(model.d_sn[s,n] for n in N)+model.st_sn[s,N[-1]]) for s in S), sense = maximize)     # set the objective of the problem
+model.obj_fun = pyo.Objective(expr = sum(P_s[s]*(sum(model.d_sn[s,n] for n in N)+model.st_sn[s,N[-1]]) for s in S), sense = pyo.maximize)     # set the objective of the problem
 
 ## solve model and get objective value
-solver = SolverFactory('gurobi')             # choose solver
+solver = pyo.SolverFactory('gurobi') # choose solver
 solver.solve(model, tee=True).write() # solve problem
