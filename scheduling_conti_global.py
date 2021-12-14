@@ -8,6 +8,7 @@ of batch processes" (Doi: 10.1016/j.compchemeng.2006.02.008)
 
 
 import pyomo.environ as pyo
+import matplotlib.pyplot as plt
 
 ## input data
 
@@ -182,3 +183,58 @@ model.obj_fun = pyo.Objective(expr = model.value_RTN, sense = pyo.maximize)
 solver = pyo.SolverFactory('gurobi')             # choose solver
 # model.display()                            # display results
 results = solver.solve(model, options={'MaxTime':3600,'EpsR':1e-8, 'threads':6}, tee=True, logfile="baron_logfile.log").write(filename="myresults.txt")
+
+
+## gantt chart
+
+gap = H/400
+idx = 1
+lbls = []   # labels
+ticks = []
+
+# determine which resources are units
+J = set()
+for r in R:
+    if all((Nu_c_ri[r,i] == 0 and Nu_p_ri[r,i] == 0) for i in I_r[r]):
+        J.add(r)
+
+# create a list of units sorted by time of first assignment
+jstart = {j:H+1 for j in J}
+for j in J:
+    for i in I_r[j]:
+        for n in N:
+            if model.w_in[i,n]() > 0:
+                jstart[j] = min(jstart[j],n)
+jsorted = [j for (j,n) in sorted(jstart.items(), key=lambda x: x[1])]
+
+
+# number of horizontal bars to draw
+nbars = -1
+for j in jsorted:
+    for i in sorted(I_r[j]):
+        nbars += 1
+    nbars += 0.5
+plt.figure(figsize=(H+1,(nbars+1)/2+0.5)) # sets width and height of figure in inches
+
+for j in jsorted:   # for every unit ...
+    idx -= 0.5
+    for i in sorted(I_r[j]):  # for every task ...
+        idx -= 1
+        ticks.append(idx)
+        lbls.append("{0:s} -> {1:s}".format(j,i))
+        plt.plot([0,H],[idx,idx],lw=24,alpha=.3,color='y')
+        for n1 in N[:-1]:
+            for n2 in N[n1+1:]:
+                if model.w_inn[i,n1,n2]() > 0:
+                    tau_start = model.tau_n[n1]()
+                    tau_end = model.tau_n[n2]()
+                    plt.plot([tau_start,tau_end], [idx,idx],'k', lw=24, alpha=0.5, solid_capstyle='butt')
+                    plt.plot([tau_start+gap,tau_end-gap], [idx,idx],'b', lw=20, solid_capstyle='butt')
+                    txt = "{0:.2f}".format(model.b_inn[i,n1,n2]())
+                    plt.text(tau_start+(tau_end-tau_start)/2, idx, txt, color='white', weight='bold', ha='center', va='center')
+plt.xlim(0,H)
+plt.ylim(-nbars-0.5,0)
+plt.gca().set_yticks(ticks)
+plt.gca().set_yticklabels(lbls)
+
+plt.show()
