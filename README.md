@@ -1,13 +1,13 @@
 # Scheduling Optimization
 
-This repository contains three different mathematical scheduling models and a script to visualize the results with a gantt chart. Everything is implemented with Pyomo.
+This repository contains three different mathematical scheduling models of which two include a script to visualize the results with a gantt chart. Everything is implemented with Pyomo.
 
 ## continuous time scheduling
 
 ### global event points
 
 The model is based on the paper of Castro, Barbosa-Póvoa and Matos (2001): "An Improved RTN Continuous-Time Formulation 
-for the Short-term Scheduling of Multipurpose Batch Plants" (DOI: 10.1021/ie000683r).
+for the Short-term Scheduling of Multipurpose Batch Plants" (DOI: 10.1021/ie000683r). It also contains a visualization with a gantt chart.
 
 Syntax is oriented towards Mendez (2006): "State-of-the-art review of optimization methods for short-term scheduling 
 of batch processes" (Doi: 10.1016/j.compchemeng.2006.02.008).
@@ -28,4 +28,6 @@ All parameters and variables are written as "name_index".
 
 ## discrete time scheduling
 
-## Gantt chart
+The model is based on the paper of Kondili, Pantelides and Sargent (1993): "A general algorithm for short-term scheduling of batch operations—I. MILP formulation." (DOI: 10.1016/0098-1354(93)80015-F).
+
+This implementation is copied from [here](https://github.com/jckantor/STN-Scheduler). It also contains a visualization with a gantt chart.
