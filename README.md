@@ -1,6 +1,8 @@
 # Scheduling Optimization
 
-This repository contains three different mathematical scheduling models of which two include a script to visualize the results with a gantt chart. Everything is implemented with Pyomo.
+This repository contains three different mathematical scheduling models of which two include a script to visualize the results with a gantt chart. Everything is implemented with Pyomo. 
+
+Please find the required modules in the requirements.txt.
 
 ## continuous time scheduling
 
