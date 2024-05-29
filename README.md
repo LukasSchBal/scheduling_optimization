@@ -4,6 +4,8 @@ This repository contains three different mathematical scheduling models of which
 
 Please find the required modules in the requirements.txt.
 
+📚 [Documentation](https://scheduling-optimization.readthedocs.io/en/latest/)
+
 ## continuous time scheduling
 
 ### global event points
